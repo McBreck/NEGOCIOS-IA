@@ -11,12 +11,15 @@ function mTop(title, back) {
     : `<button type="button" class="back" data-a="${back}" aria-label="Volver">${ic('back', 20)}</button>`;
   return `<header class="m-top">${b}<h1 tabindex="-1">${title}</h1></header>`;
 }
+/* Escritorio: barra lateral y contenido ancho. Celular: barra inferior; en flujos (reserva, chat) se oculta para enfocar la tarea. */
 function ownerShell(body, tab, top = '') {
   const { u } = ownerCtx(), n = Q.unread(u.id);
-  const items = [['inicio', 'home', 'Inicio'], ['reservar', 'plus', 'Reservar'], ['citas', 'list', 'Mis citas'], ['avisos', 'bell', 'Avisos'], ['perfil', 'user', 'Perfil']];
-  const nav = !tab ? '' : `<nav class="m-nav" aria-label="Navegación principal">${items.map(([k, i, l]) =>
-    `<a href="#/d/${k}" class="${k === tab ? 'on' : ''}"${k === tab ? ' aria-current="page"' : ''}${k === 'reservar' ? ' data-a="nuevaReserva"' : ''}>${ic(i, 22)}${l}${k === 'avisos' && n ? `<span class="badge">${n}<span class="sr"> sin leer</span></span>` : ''}</a>`).join('')}</nav>`;
-  return `<div class="m-shell"><div class="m-app">${top}<main class="m-content" id="main">${body}</main>${nav}</div></div>`;
+  const items = [['inicio', 'home', 'Inicio'], ['citas', 'list', 'Mis citas'], ['asistente', 'spark', 'Vetty IA'], ['avisos', 'bell', 'Avisos'], ['perfil', 'user', 'Perfil']];
+  const flujo = !tab || tab === 'asistente';
+  const side = sideNav({ items: items.map(([k, i, l]) => [k, i, l, `#/d/${k}`, k === 'avisos' ? n : 0]), active: tab, u, nombre: `${u.nombres} ${u.apellidos}`, rol: 'Dueño de mascota', cls: 'o-side' });
+  const nav = `<nav class="m-nav" aria-label="Navegación principal">${items.map(([k, i, l]) =>
+    `<a href="#/d/${k}" class="${k === tab ? 'on' : ''}${k === 'asistente' ? ' ia' : ''}"${k === tab ? ' aria-current="page"' : ''}>${k === 'asistente' ? `<span class="ia-nav">${ic(i, 22)}</span>` : ic(i, 22)}${l}${k === 'avisos' && n ? `<span class="badge">${n}<span class="sr"> sin leer</span></span>` : ''}</a>`).join('')}</nav>`;
+  return `<div class="o-shell">${side}<div class="m-app${flujo ? ' is-flow' : ''}${tab === 'asistente' ? ' is-chat' : ''}">${top}<main class="m-content" id="main">${body}</main>${nav}</div></div>`;
 }
 const proximas = dId => Q.citasOfDueno(dId).filter(c => VIGENTES.includes(c.estado) && ms(c.fin) > Date.now()).sort(by(c => c.inicio));
 
@@ -38,16 +41,56 @@ Owner.home = () => {
   } else {
     next = `<section class="card"><h2 class="h3">No tienes citas próximas</h2><p class="small muted mt4">Reserva en línea a cualquier hora, sin llamar a la clínica.</p></section>`;
   }
-  const body = `
-    <div class="hello"><div><p class="small muted">${h < 12 ? 'Buenos días' : h < 19 ? 'Buenas tardes' : 'Buenas noches'}</p><h1 tabindex="-1">Hola, ${esc(u.nombres.split(' ')[0])}</h1></div>
-      <a class="avatar me" href="#/d/perfil" aria-label="Mi perfil">${esc(iniciales(u))}</a></div>
-    ${unread ? `<a class="note info mb12" href="#/d/avisos">${ic('bell', 18)}<span>Tienes ${plural(unread, 'aviso sin leer', 'avisos sin leer')}. <b>Revisar</b></span></a>` : ''}
-    ${next}
-    <button type="button" class="btn ok block mt16" data-a="nuevaReserva">${ic('plus', 20)} Reservar nueva cita</button>
-    <div class="sec-h"><h2 class="h3">Mis mascotas</h2><button type="button" class="btn link" data-a="petNew">+ Agregar</button></div>
+  const recs = IA.recomendacionesDueno(d.id);
+  const hero = `<section class="ia-hero" aria-labelledby="hero-t">
+      <div class="row gap12 top"><span class="vetty lg" aria-hidden="true">${ic('spark', 24)}</span><div class="min0"><h2 id="hero-t">¿Qué necesita tu mascota hoy?</h2>
+        <p class="small lt mt4">Cuéntaselo a <b>Vetty</b>, nuestro asistente con IA: evalúa los síntomas, te deriva al especialista y te propone el mejor horario.</p></div></div>
+      <a class="ia-ask" href="#/d/asistente">${ic('msg', 18)}<span class="ellip">Ej.: «Mi perro vomitó desde ayer»</span>${ic('send', 18)}</a>
+      <div class="qchips light">
+        <button type="button" class="qchip" data-a="iaHome" data-f="triage">🩺 Síntoma</button>
+        <button type="button" class="qchip" data-a="iaHomeFoto">📷 Foto</button>
+        <button type="button" class="qchip" data-a="iaHome" data-f="voz">🎤 Voz</button>
+        <button type="button" class="qchip" data-a="iaHome" data-f="prevencion">💉 Vacunas</button>
+        <button type="button" class="qchip" data-a="iaHome" data-f="cotizar">💰 Cotizar</button>
+      </div>
+      <input type="file" id="home-file" accept="image/*" hidden data-i="iaFoto">
+    </section>`;
+  const recHtml = recs.length ? `<div class="sec-h"><h2 class="h3 row gap8">${ic('spark', 16)} Recomendado por IA</h2><span class="xs muted">según su historial</span></div>
+    <div class="list">${recs.map(r => { const m = get('mascotas', r.petId); return `<article class="card rec"><div class="row gap12 top">${petAv(m, 40)}<div class="grow min0"><p class="xs muted">${esc(m.nombre)}</p><h3>${esc(r.titulo)}</h3><p class="small muted mt4">${esc(r.texto)}</p></div></div>
+      <button type="button" class="btn sm sec block mt12" data-a="recVer" data-k="${r.key}">${ic('cal', 16)} Ver horarios sugeridos</button></article>`; }).join('')}</div>` : '';
+  const mascotas = `<div class="sec-h"><h2 class="h3">Mis mascotas</h2><button type="button" class="btn link" data-a="petNew">+ Agregar</button></div>
     ${pets.length ? `<div class="list">${pets.map(m => `<a class="card pet-card" href="#/d/mascota/${m.id}">${petAv(m)}<span class="grow min0"><b class="block">${esc(m.nombre)}</b><span class="small muted block ellip">${esc(petLine(m))}</span></span><span class="xs muted">${plural(Q.citasOfPet(m.id).length, 'cita', 'citas')}</span>${ic('chev', 18)}</a>`).join('')}</div>`
       : `<div class="card empty"><div class="big">🐾</div><p>Registra a tu mascota para poder reservar una cita.</p><button type="button" class="btn pri mt12" data-a="petNew">Agregar mascota</button></div>`}`;
+  const body = `
+    <div class="hello"><div><p class="small muted">${h < 12 ? 'Buenos días' : h < 19 ? 'Buenas tardes' : 'Buenas noches'}</p><h1 tabindex="-1">Hola, ${esc(u.nombres.split(' ')[0])}</h1></div>
+      <a class="avatar me hide-d" href="#/d/perfil" aria-label="Mi perfil">${esc(iniciales(u))}</a></div>
+    <div class="o-grid">
+      <div class="o-col">
+        ${hero}
+        ${unread ? `<a class="note info" href="#/d/avisos">${ic('bell', 18)}<span>Tienes ${plural(unread, 'aviso sin leer', 'avisos sin leer')}. <b>Revisar</b></span></a>` : ''}
+        ${next}
+        <button type="button" class="btn sec block" data-a="nuevaReserva">${ic('cal', 18)} Reservar sin asistente</button>
+      </div>
+      <div class="o-col">${recHtml}${mascotas}</div>
+    </div>`;
   App.render(ownerShell(body, 'inicio'));
+};
+function recDe(key) { return IA.recomendacionesDueno(ownerCtx().d.id).find(r => r.key === key); }
+function recModal(r) {
+  const { u } = ownerCtx(), m = get('mascotas', r.petId), ofs = IA.ofertasRecomendacion(r);
+  return `${modalHead(`${esc(r.titulo)} · ${esc(m.nombre)}`)}
+    <p class="small">Hola, ${esc(u.nombres.split(' ')[0])}. ${esc(r.texto)} ${ofs.length ? `Tengo estos horarios libres con ${esc([...new Set(ofs.map(id => Q.vetName(IA.ofertas.get(id).vetId)))].join(' o '))}, ¿cuál te queda mejor?` : 'No encontré horarios libres pronto; llama a la clínica.'}</p>
+    ${ofs.length ? ofertasHtml(ofs) : ''}
+    <button type="button" class="btn link mt8" data-a="recManual" data-k="${r.key}">Prefiero elegir otro horario</button>`;
+}
+ACT.recVer = el => { const r = recDe(el.dataset.k); if (r) openModal(recModal(r)); else { toast('Esta recomendación ya está agendada.', 'info'); App.refresh(); } };
+ACT.recManual = el => {
+  const r = recDe(el.dataset.k);
+  if (!r) return;
+  const sv = IA.servicio(r.servicio);
+  Owner.draft = nuevoDraft({ step: 3, petId: r.petId, servicioId: sv.id, vetId: r.vetId || 0, motivo: r.titulo, ia: { origen: 'recomendacion', urgencia: 'normal', area: r.area, servicio: sv.nombre, sintomas: [], respuestas: {}, fotos: [], voz: '', resumen: `Propuesta por el asistente IA a partir del historial: ${r.titulo.toLowerCase()}. ${r.texto}` } });
+  closeModal();
+  go('#/d/reservar');
 };
 
 /* ---------- Mascotas (RF03, RF14) ---------- */
@@ -123,7 +166,7 @@ Owner.mascota = id => {
 };
 
 /* ---------- Selector de fecha y hora (compartido por reserva y reprogramación) ---------- */
-function picker(st, p, { servicioId, vetId, petId, excluir, actual }) {
+function picker(st, p, { servicioId, vetId, petId, excluir, actual, calma }) {
   const vetIds = vetId ? [vetId] : Q.vetsActivos().map(v => v.id);
   const hoy = startOfDay(new Date()), dias = [];
   for (let i = 0; i < 21; i++) {
@@ -149,16 +192,16 @@ function picker(st, p, { servicioId, vetId, petId, excluir, actual }) {
     }).join('')}</div>
     <div class="row between mt16 mb8"><h3>Horarios disponibles</h3><span class="xs muted">${plural(cur.libres, 'libre', 'libres')}</span></div>
     ${cur.sl.length ? `<div class="slots" role="group" aria-label="Elige la hora">${cur.sl.map(x => {
-      const on = ms(x.inicio) === st.inicio, t = fTime(x.inicio);
-      return `<button type="button" class="slot ${on ? 'on' : ''}" data-a="pickSlot" data-p="${p}" data-t="${ms(x.inicio)}" aria-pressed="${on}" ${x.libre ? '' : `disabled aria-label="${t} ${ms(x.inicio) === actual ? 'horario actual' : 'ocupado'}"`}>${t}</button>`;
-    }).join('')}</div><p class="xs muted mt8">Las horas tachadas ya están ocupadas.</p>` : '<div class="card empty">No hay horarios este día.</div>'}`;
+      const on = ms(x.inicio) === st.inicio, t = fTime(x.inicio), tranq = calma && x.libre && IA.tranquilidad(x.inicio, get('servicios', servicioId).duracion) === 0;
+      return `<button type="button" class="slot ${on ? 'on' : ''}${tranq ? ' calm' : ''}" data-a="pickSlot" data-p="${p}" data-t="${ms(x.inicio)}" aria-pressed="${on}" ${x.libre ? (tranq ? `aria-label="${t}, horario tranquilo"` : '') : `disabled aria-label="${t} ${ms(x.inicio) === actual ? 'horario actual' : 'ocupado'}"`}>${t}</button>`;
+    }).join('')}</div><p class="xs muted mt8">Las horas tachadas ya están ocupadas.${calma ? ' <span class="calm-leg">🌿 Sugerencia IA: horarios tranquilos, con pocos perros en la sala de espera.</span>' : ''}</p>` : '<div class="card empty">No hay horarios este día.</div>'}`;
 }
 const pickState = p => (p === 'rp' ? Owner.rp : Owner.draft);
 ACT.pickDay = el => { const st = pickState(el.dataset.p); st.day = +el.dataset.d; st.inicio = null; App.refresh(); };
 ACT.pickSlot = el => { pickState(el.dataset.p).inicio = +el.dataset.t; App.refresh(); };
 
 /* ---------- P04 Reservar cita en 4 pasos (RF04, RF05) ---------- */
-const nuevoDraft = (o = {}) => ({ step: 1, petId: null, servicioId: null, vetId: 0, day: null, inicio: null, motivo: '', vetAsig: null, done: null, ...o });
+const nuevoDraft = (o = {}) => ({ step: 1, petId: null, servicioId: null, vetId: 0, day: null, inicio: null, motivo: '', vetAsig: null, done: null, ia: null, ...o });
 Owner.reservar = () => {
   const { d } = ownerCtx();
   const st = Owner.draft || (Owner.draft = nuevoDraft());
@@ -174,7 +217,8 @@ Owner.reservar = () => {
       : `<div class="card empty"><div class="big">🐾</div><p>Primero registra a tu mascota.</p><button type="button" class="btn pri mt12" data-a="petNew">Agregar mascota</button></div>`);
     cta = `<button type="button" class="btn pri block" data-a="rsNext" ${st.petId ? '' : 'disabled'}>Continuar</button>`;
   } else if (st.step === 2) {
-    body = `<h2 class="mb12">¿Qué servicio necesitas?</h2>
+    body = `<a class="note ai mb16" href="#/d/asistente">${ic('spark', 18)}<span>¿No sabes qué servicio elegir? <b>Cuéntale los síntomas a Vetty</b> y te deriva al especialista adecuado.</span></a>
+      <h2 class="mb12">¿Qué servicio necesitas?</h2>
       <div class="list" role="radiogroup" aria-label="Servicio">${db.servicios.filter(s => s.activo).map(s => optCard({ on: st.servicioId === s.id, a: 'rsSvc', id: s.id, title: s.nombre, sub: `${s.duracion} min · ${money(s.precio)} referencial` })).join('')}</div>
       <h2 class="mt24 mb12">¿Con qué veterinario?</h2>
       <div class="list" role="radiogroup" aria-label="Veterinario">
@@ -184,10 +228,10 @@ Owner.reservar = () => {
     cta = `<button type="button" class="btn pri block" data-a="rsNext" ${st.servicioId ? '' : 'disabled'}>${st.servicioId ? 'Continuar' : 'Elige un servicio para continuar'}</button>`;
   } else if (st.step === 3) {
     const sv = get('servicios', st.servicioId), m = get('mascotas', st.petId);
-    body = `<div class="card mb16 tight"><div class="kv sm">
+    body = `${st.ia ? `<div class="note ai mb12">${ic('spark', 18)}<span>Propuesta del asistente IA. El veterinario recibirá el resumen de lo que contaste.</span></div>` : ''}<div class="card mb16 tight"><div class="kv sm">
         <div><span>Mascota</span><b>${esc(m.nombre)}</b></div><div><span>Servicio</span><b>${esc(sv.nombre)} · ${sv.duracion} min</b></div>
         <div><span>Veterinario</span><b>${st.vetId ? esc(Q.vetName(st.vetId)) : 'Cualquiera disponible'}</b></div></div></div>
-      ${picker(st, 'rs', { servicioId: sv.id, vetId: st.vetId || null, petId: m.id })}
+      ${picker(st, 'rs', { servicioId: sv.id, vetId: st.vetId || null, petId: m.id, calma: m.especie === 'Gato' })}
       <div class="field mt16"><label for="rs-mot">Motivo de la consulta (opcional)</label><textarea class="input" id="rs-mot" rows="2" maxlength="200" data-i="rsMotivo" placeholder="Ej.: control anual, no quiere comer desde ayer…">${esc(st.motivo)}</textarea></div>`;
     cta = `<button type="button" class="btn pri block" data-a="rsNext" ${st.inicio ? '' : 'disabled'}>${st.inicio ? `Continuar · ${fShort(st.inicio)} a las ${fTime(st.inicio)}` : 'Elige un horario para continuar'}</button>`;
   } else {
@@ -241,7 +285,7 @@ Object.assign(ACT, {
   rsConfirm() {
     const st = Owner.draft;
     try {
-      const c = reservar({ petId: st.petId, servicioId: st.servicioId, vetId: st.vetId || st.vetAsig, inicio: st.inicio, motivo: st.motivo.trim(), uid: Session.uid() });
+      const c = reservar({ petId: st.petId, servicioId: st.servicioId, vetId: st.vetId || st.vetAsig, inicio: st.inicio, motivo: st.motivo.trim(), uid: Session.uid(), ia: st.ia });
       st.done = c.id;
     } catch (e) {
       toast(e.message, 'err');
@@ -328,6 +372,7 @@ Owner.cita = id => {
       <div><span>Veterinario</span><b>${esc(Q.vetName(c.id_vet, 'completo'))}</b></div><div><span>Motivo</span><span>${esc(c.motivo || '—')}</span></div></div></div>
     ${acc ? `<div class="mt12">${acc}</div>` : ''}
     ${c.estado === 'ATENDIDA' && c.observaciones ? `<div class="sec-h"><h2 class="h3">Indicaciones del veterinario</h2></div><div class="card small">${esc(c.observaciones)}</div>` : ''}
+    ${c.ia ? `<div class="mt16">${iaCard(c.ia)}</div>` : ''}
     ${vig ? `<div class="sec-h"><h2 class="h3">Recordatorios</h2></div><div class="card kv">${recLines(c)}</div>` : ''}
     <div class="sec-h"><h2 class="h3">Historial de cambios</h2></div><div class="card"><ol class="timeline">${hist}</ol></div>`;
   App.render(ownerShell(body, 'citas', mTop('Detalle de la cita', '#/d/citas')));
@@ -373,6 +418,10 @@ ACT.rpOk = async () => {
 
 /* ---------- P06 Avisos: correos y SMS simulados (RF08, RF09) ---------- */
 function msgInfo(msg) {
+  if (msg.tipo === 'RECOMENDACION') {
+    const r = msg.reco, pet = get('mascotas', r.petId);
+    return { asunto: `${pet.nombre}: ${r.titulo.toLowerCase()}`, intro: esc(r.texto), pet, reco: r };
+  }
   const s = msg.snap, pet = get('mascotas', s.id_mascota), when = D(s.inicio), hora = fTime(when), n = esc(pet.nombre);
   const T = {
     CONFIRMACION: [`Cita registrada: ${pet.nombre} el ${fShort(when)} a las ${hora}`, `Registramos la cita de <b>${n}</b>. Te enviaremos recordatorios 24 h y 2 h antes.`],
@@ -390,7 +439,7 @@ Owner.avisos = () => {
     <div class="note info mb16">${ic('info', 18)}<span><b>Modo demostración.</b> Los recordatorios llegan solos 24 h y 2 h antes de cada cita. Para probarlo ahora, <button type="button" class="btn link inline" data-a="demoRec">simula el siguiente recordatorio</button>.</span></div>
     ${lista.length ? `<div class="card p0">${lista.map(m => {
       const I = msgInfo(m);
-      return `<a class="msg-item ${m.leido ? '' : 'unread'}" href="#/d/avisos/${m.id}"><span class="msg-ic">${ic(m.canal === 'SMS' ? 'msg' : 'mail', 18)}</span>
+      return `<a class="msg-item ${m.leido ? '' : 'unread'}" href="#/d/avisos/${m.id}"><span class="msg-ic${I.reco ? ' ai' : ''}">${ic(I.reco ? 'spark' : m.canal === 'SMS' ? 'msg' : 'mail', 18)}</span>
         <span class="grow min0"><span class="row between gap8"><span class="xs muted"><b>VetCitas</b> · ${m.canal === 'SMS' ? 'SMS' : 'Correo'}</span><span class="xs muted">${fWhen(m.fecha)}</span></span>
         <span class="subj block ellip">${esc(I.asunto)}</span></span>${m.leido ? '' : '<span class="dot"><span class="sr">Sin leer</span></span>'}</a>`;
     }).join('')}</div>` : '<div class="card empty"><div class="big">📭</div>Aún no tienes avisos.</div>'}`;
@@ -406,6 +455,7 @@ Owner.aviso = id => {
   const { u } = ownerCtx(), msg = get('mensajes', id);
   if (!msg || msg.id_usuario !== u.id) return go('#/d/avisos', true);
   if (!msg.leido) { msg.leido = true; Store.save(); }
+  if (msg.tipo === 'RECOMENDACION') return Owner.avisoReco(msg);
   const I = msgInfo(msg), c = get('citas', msg.id_cita), rec = msg.id_rec ? get('recordatorios', msg.id_rec) : null;
   const recordatorio = msg.tipo === 'H24' || msg.tipo === 'H2', actual = c.inicio === msg.snap.inicio;
   const vigente = VIGENTES.includes(c.estado) && ms(c.inicio) > Date.now();
@@ -472,4 +522,18 @@ SUBMIT.perfil = f => {
   closeModal();
   toast('Datos actualizados.');
   App.refresh();
+};
+
+/* Mensaje proactivo de la IA: propone horarios para la recomendación y se agenda con un toque. */
+Owner.avisoReco = msg => {
+  const { u } = ownerCtx(), I = msgInfo(msg), r = recDe(msg.reco.key);
+  const ofs = r ? IA.ofertasRecomendacion(r) : [];
+  const vets = [...new Set(ofs.map(id => Q.vetName(IA.ofertas.get(id).vetId)))].join(' o ');
+  App.render(ownerShell(`<h2>${esc(I.asunto)}</h2>
+    <div class="row gap8 mt12 mb16"><span class="msg-ic ai">${ic('spark', 18)}</span><div class="min0"><p class="small ellip"><b>Vetty · Asistente IA</b> &lt;citas@vetcitas.pe&gt;</p><p class="xs muted">para mí · ${fShort(msg.fecha)}, ${fTime(msg.fecha)}</p></div></div>
+    <div class="card"><div class="row gap12 top">${petAv(I.pet, 44)}<p>Hola, ${esc(u.nombres.split(' ')[0])}. Revisé el historial de <b>${esc(I.pet.nombre)}</b>: ${I.intro}</p></div>
+      ${!r ? `<div class="note ok mt12">${ic('check', 18)}<span>¡Ya está agendado! Esta recomendación no tiene pendientes.</span></div>`
+        : ofs.length ? `<p class="small mt12">Tengo estos horarios libres con ${esc(vets)}, ¿cuál te queda mejor?</p>${ofertasHtml(ofs)}<button type="button" class="btn link mt8" data-a="recManual" data-k="${r.key}">Prefiero elegir otro horario</button>`
+          : `<p class="small mt12">No encontré horarios libres pronto; llama a la clínica al ${CLINICA.tel}.</p>`}
+      <p class="xs muted mt12">Mensaje automático del asistente IA, generado a partir del historial clínico.</p></div>`, null, mTop('Bandeja de entrada', '#/d/avisos')));
 };

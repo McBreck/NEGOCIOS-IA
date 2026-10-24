@@ -22,6 +22,7 @@ const ROUTES = [
   ['#/d/avisos', 'DUENO', () => Owner.avisos()],
   ['#/d/avisos/:id', 'DUENO', id => Owner.aviso(id)],
   ['#/d/perfil', 'DUENO', () => Owner.perfil()],
+  ['#/d/asistente', 'DUENO', () => Owner.asistente()],
   ['#/v/agenda', 'VETERINARIO', () => Vet.agenda()],
   ['#/v/horario', 'VETERINARIO', () => Vet.horario()],
   ['#/v/pacientes', 'VETERINARIO', () => Vet.pacientes()],
@@ -58,6 +59,7 @@ const App = {
   route() {
     procesarRecordatorios();
     const hash = location.hash || '#/login', u = Session.user();
+    if (u && u.rol === 'DUENO') IA.notificarRecomendaciones(u.id);
     for (const [re, rol, fn] of ROUTES) {
       const m = hash.match(re);
       if (!m) continue;
@@ -65,10 +67,9 @@ const App = {
       if (!rol && u) return go(HOME[u.rol], true);
       App.changed = hash !== App.last;
       App.last = hash;
-      if (App.changed) closeModal();
+      if (App.changed) { closeModal(); window.scrollTo(0, 0); }
       fn(m[1] ? Number(m[1]) : undefined);
       if (App.changed) {
-        window.scrollTo(0, 0);
         App.root.querySelector('h1')?.focus({ preventScroll: true });
         App.changed = false;
       }
@@ -82,6 +83,7 @@ const App = {
     Object.assign(Owner, { draft: null, rp: null, tab: 'prox' });
     Object.assign(Agenda.st, { sel: null, ref: null });
     Object.assign(Vet, { hor: null, pet: null, q: '' });
+    Asis.ctx = null;
     go(HOME[u.rol]);
   },
 };

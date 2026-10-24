@@ -1,6 +1,7 @@
 'use strict';
 /* Base de datos simulada (entregable 3.2) guardada en localStorage, con las reglas de negocio RN01–RN06. */
 const DB_KEY = 'vetcitas.db.v1';
+const DB_VERSION = 2; // al cambiar la estructura, los datos guardados se regeneran
 const SES_KEY = 'vetcitas.sesion.v1';
 const VIGENTES = ['PENDIENTE', 'CONFIRMADA', 'REPROGRAMADA'];
 const ESTADOS = {
@@ -20,7 +21,7 @@ const Store = {
   load() {
     try {
       const x = JSON.parse(localStorage.getItem(DB_KEY));
-      if (x && x.version === 1) { db = x; return; }
+      if (x && x.version === DB_VERSION) { db = x; return; }
     } catch (e) { /* datos dañados: se regeneran */ }
     db = seed();
     Store.save();
@@ -171,7 +172,8 @@ function enviarRecordatorioAhora(uid) {
   return n;
 }
 
-function reservar({ petId, servicioId, vetId, inicio, motivo, uid }) {
+/* `ia` guarda el resumen del asistente (triage, foto, voz, cotización) que el veterinario lee antes de la cita. */
+function reservar({ petId, servicioId, vetId, inicio, motivo, uid, ia = null }) {
   const sv = get('servicios', servicioId), s = D(inicio), e = addMin(s, sv.duracion);
   if (ms(s) <= Date.now()) throw new Error('Ese horario ya pasó. Elige otro, por favor.');
   if (!vetLibre(vetId, s, e)) throw new Error('Ese horario acaba de ser tomado por otra persona. Elige otro, por favor.');
@@ -179,9 +181,9 @@ function reservar({ petId, servicioId, vetId, inicio, motivo, uid }) {
   const now = nowISO();
   const c = insert('citas', {
     id_mascota: petId, id_vet: vetId, id_servicio: servicioId, inicio: s.toISOString(), fin: e.toISOString(),
-    estado: 'PENDIENTE', motivo: motivo || '', observaciones: '', creado_por: uid, creado_en: now, actualizado_en: now,
+    estado: 'PENDIENTE', motivo: motivo || '', observaciones: '', creado_por: uid, creado_en: now, actualizado_en: now, ia,
   });
-  historialAdd(c, null, 'PENDIENTE', uid, 'Cita registrada en línea');
+  historialAdd(c, null, 'PENDIENTE', uid, ia ? 'Cita registrada con el asistente IA' : 'Cita registrada en línea');
   programarRecordatorios(c);
   notificar(c, 'CONFIRMACION');
   procesarRecordatorios();
@@ -285,24 +287,66 @@ const COMENTARIO = {
   ATENDIDA: 'Atención registrada por el veterinario',
   NO_ASISTIO: 'El dueño no se presentó (tolerancia de 15 min)',
 };
+/* Resúmenes del asistente IA en citas de ejemplo («mascota|servicio»), para que el veterinario los vea en su agenda. */
+const iaSeed = (motivo, ia) => ({ motivo, ia: { origen: 'asistente', fotos: [], voz: '', ...ia } });
+const SEED_IA = {
+  'Bruno|Consulta general': iaSeed('Vómitos desde ayer y decaimiento', {
+    urgencia: 'alta', area: 'Gastroenterología', servicio: 'Consulta general', sintomas: ['Vomitó tres veces desde ayer y está muy decaído'],
+    respuestas: { Desde: '1 a 2 días', 'Signos de alarma': 'Ninguno', 'Come y toma agua': 'No come ni toma agua' },
+    razon: 'Prioridad alta porque no come ni toma agua.',
+    resumen: 'Bruno (perro, 4 años, 22.1 kg). Vomitó tres veces desde ayer y está muy decaído. No come ni toma agua. Sin signos de alarma. Área probable: gastroenterología.',
+  }),
+  'Milo|Consulta general': iaSeed('Se esconde y orina fuera del arenero', {
+    urgencia: 'normal', area: 'Comportamiento', servicio: 'Consulta general', sintomas: ['Desde la mudanza se esconde y orina fuera del arenero'],
+    respuestas: { Desde: '3 días o más', 'Signos de alarma': 'Ninguno', 'Come y toma agua': 'Come poco' },
+    razon: 'Gato con estrés: se eligió un horario con poca afluencia de perros.',
+    resumen: 'Milo (gato, 2 años, 4 kg). Desde la mudanza se esconde y orina fuera del arenero. Come poco. Sin signos de alarma. Área probable: comportamiento. Horario tranquilo.',
+  }),
+  'Coco|Consulta general': iaSeed('Cojea de la pata trasera derecha', {
+    urgencia: 'normal', area: 'Traumatología', servicio: 'Consulta general', sintomas: ['Cojea de la pata trasera derecha después de saltar del sillón'],
+    respuestas: { Desde: '3 días o más', 'Signos de alarma': 'Ninguno', 'Come y toma agua': 'Sí, con normalidad' }, voz: 'Mi perro cojea de la pata trasera derecha desde que saltó del sillón',
+    razon: 'Derivado a traumatología.',
+    resumen: 'Coco (perro, 7 años, 8.3 kg). Cojea de la pata trasera derecha después de saltar del sillón. Come normal. Sin signos de alarma. Área probable: traumatología.',
+  }),
+  'Bella|Consulta de especialidad': iaSeed('Se rasca mucho y tiene zonas sin pelo', {
+    urgencia: 'normal', area: 'Dermatología', servicio: 'Consulta de especialidad', sintomas: ['Se rasca mucho el lomo y tiene zonas sin pelo'],
+    respuestas: { Desde: '3 días o más', 'Signos de alarma': 'Ninguno', 'Come y toma agua': 'Sí, con normalidad', 'Zona de la foto': 'Piel o pelaje' },
+    razon: 'Derivada a dermatología con 40 min para una evaluación completa.',
+    resumen: 'Bella (perra, 3 años, 6.2 kg). Se rasca mucho el lomo y tiene zonas sin pelo. Come normal. Sin signos de alarma. Área probable: dermatología.',
+  }),
+  'Luna|Consulta de especialidad': iaSeed('Se sacude la cabeza y le huele la oreja', {
+    urgencia: 'normal', area: 'Otología', servicio: 'Consulta de especialidad', sintomas: ['Se sacude la cabeza y le huele mal la oreja izquierda'],
+    respuestas: { Desde: '1 a 2 días', 'Signos de alarma': 'Ninguno', 'Come y toma agua': 'Sí, con normalidad' },
+    razon: 'Gata: horario tranquilo y derivación a otología.',
+    resumen: 'Luna (gata, 1 año, 3.1 kg). Se sacude la cabeza y le huele mal la oreja izquierda. Come normal. Sin signos de alarma. Área probable: otología.',
+  }),
+  'Kira|Vacunación': iaSeed('Refuerzo anual de vacunas', {
+    origen: 'recomendacion', urgencia: 'normal', area: 'Vacunación', servicio: 'Vacunación', sintomas: [], respuestas: {},
+    resumen: 'Cita propuesta por el asistente IA a partir del historial: refuerzo anual de vacunas de Kira.',
+  }),
+};
 
 function seed() {
-  db = { version: 1, seq: {}, usuarios: [], duenos: [], veterinarios: [], mascotas: [], servicios: [], horarios: [], bloqueos: [], citas: [], historial: [], recordatorios: [], mensajes: [] };
+  db = { version: DB_VERSION, seq: {}, usuarios: [], duenos: [], veterinarios: [], mascotas: [], servicios: [], horarios: [], bloqueos: [], citas: [], historial: [], recordatorios: [], mensajes: [], alertas: [], recAvisadas: [] };
   const now = new Date(), iso = d => D(d).toISOString();
   const usuario = (nombres, apellidos, correo, telefono, pass, rol) => insert('usuarios', { nombres, apellidos, correo, telefono, pass, rol, acepta_datos: true, activo: true, creado_en: iso(addDays(now, -240)) });
 
   usuario('Recepción', 'Clínica', 'admin@vetcitas.pe', '944 111 222', 'Admin2026', 'ADMIN');
-  const [vC, vA] = [
-    ['Carlos', 'Rojas Vega', 'carlos.rojas@vetcitas.pe', '955 222 333', '08451', 'Pequeños animales'],
-    ['Andrea', 'Salazar Cruz', 'andrea.salazar@vetcitas.pe', '966 333 444', '09127', 'Medicina general'],
-  ].map(([n, a, c, t, cmvp, especialidad]) => {
+  // Las áreas indican al asistente IA a qué veterinario derivar según los síntomas.
+  const [vC, vA, vL] = [
+    ['Carlos', 'Rojas Vega', 'carlos.rojas@vetcitas.pe', '955 222 333', '08451', 'Pequeños animales', ['Medicina general', 'Traumatología', 'Cirugía']],
+    ['Andrea', 'Salazar Cruz', 'andrea.salazar@vetcitas.pe', '966 333 444', '09127', 'Medicina general', ['Medicina general', 'Vacunación', 'Gastroenterología', 'Felinos', 'Comportamiento']],
+    ['Laura', 'Castillo Núñez', 'laura.castillo@vetcitas.pe', '977 444 555', '10388', 'Dermatología y alergias', ['Dermatología', 'Oftalmología', 'Otología', 'Vacunación']],
+  ].map(([n, a, c, t, cmvp, especialidad, areas]) => {
     const u = usuario(n, a, c, t, 'Vet12345', 'VETERINARIO');
-    const v = insert('veterinarios', { id_usuario: u.id, cmvp, especialidad });
+    const v = insert('veterinarios', { id_usuario: u.id, cmvp, especialidad, areas });
     horarioBase(v.id);
     return v;
   });
   [['Consulta general', 30, 50, true], ['Vacunación', 15, 40, true], ['Desparasitación', 15, 30, true],
-    ['Control postoperatorio', 20, 35, true], ['Baño medicado', 45, 45, true], ['Ecografía', 45, 90, false]]
+    ['Control postoperatorio', 20, 35, true], ['Baño medicado', 45, 45, true], ['Consulta de especialidad', 40, 70, true],
+    ['Consulta felina tranquila', 40, 60, true], ['Valoración prequirúrgica', 30, 60, true], ['Chequeo geriátrico', 45, 80, true],
+    ['Ecografía', 45, 90, false]]
     .forEach(([nombre, duracion, precio, activo]) => insert('servicios', { nombre, duracion, precio, activo }));
   const svc = n => db.servicios.find(s => s.nombre === n);
 
@@ -381,8 +425,13 @@ function seed() {
     const c = crear(pet.Mishi, 'Vacunación', vA, sM, 'CONFIRMADA', { creado, com: 'Asistencia confirmada por el dueño' });
     notificar(c, 'CONFIRMACION', null, iso(creado)).leido = true;
   }
-  crear(pet.Rocky, 'Vacunación', vC, atTime(diaHabil(now, -48), '10:00'), 'ATENDIDA', { forzar: true, obs: 'Vacuna séxtuple aplicada sin reacciones. Próxima dosis en un año.' });
+  // Historial de Lucía: el refuerzo de vacunas de Rocky está por vencer y Mishi no se desparasita hace 4 meses,
+  // así el asistente IA tiene recomendaciones preventivas que proponer.
+  crear(pet.Rocky, 'Vacunación', vA, atTime(diaHabil(addDays(now, -352), 0), '10:00'), 'ATENDIDA', { forzar: true, obs: 'Vacuna séxtuple y antirrábica aplicadas sin reacciones. Próxima dosis en un año.' });
+  crear(pet.Rocky, 'Desparasitación', vC, atTime(diaHabil(now, -30), '09:30'), 'ATENDIDA', { forzar: true, obs: 'Desparasitación interna completada. Repetir en 3 meses.' });
+  crear(pet.Rocky, 'Consulta general', vC, atTime(diaHabil(now, -11), '10:00'), 'ATENDIDA', { forzar: true, obs: 'Dermatitis leve en zona dorsal. Se indica baño medicado semanal y control en 15 días.' });
   crear(pet.Rocky, 'Consulta general', vC, atTime(diaHabil(now, -130), '11:00'), 'CANCELADA', { forzar: true });
+  crear(pet.Mishi, 'Desparasitación', vA, atTime(diaHabil(addDays(now, -122), 0), '11:30'), 'ATENDIDA', { forzar: true, obs: 'Desparasitación interna y externa. Repetir en 3 meses.' });
   crear(pet.Mishi, 'Consulta general', vA, atTime(diaHabil(now, -26), '11:00'), 'ATENDIDA', { forzar: true, obs: 'Control general sin hallazgos. Peso adecuado para su edad.' });
 
   // Semana actual del veterinario (desplazamiento en días hábiles respecto de hoy).
@@ -403,7 +452,12 @@ function seed() {
     [3, '15:00', 'Toby', 'Control postoperatorio', vC, 'PENDIENTE'],
     [4, '09:00', 'Thor', 'Consulta general', vC, 'CONFIRMADA'], [4, '10:30', 'Bella', 'Vacunación', vA, 'PENDIENTE'],
     [5, '09:30', 'Coco', 'Desparasitación', vC, 'PENDIENTE'], [6, '15:00', 'Kira', 'Vacunación', vC, 'PENDIENTE'],
-  ].forEach(([off, h, p, s, v, estado]) => crear(pet[p], s, v, atTime(diaHabil(now, off), h), estado));
+    [1, '11:30', 'Bella', 'Consulta de especialidad', vL, 'CONFIRMADA'], [1, '15:00', 'Luna', 'Consulta de especialidad', vL, 'PENDIENTE'],
+    [2, '09:30', 'Thor', 'Vacunación', vL, 'CONFIRMADA'],
+  ].forEach(([off, h, p, s, v, estado]) => {
+    const c = crear(pet[p], s, v, atTime(diaHabil(now, off), h), estado);
+    if (c && off >= 0 && SEED_IA[p + '|' + s]) Object.assign(c, SEED_IA[p + '|' + s]);
+  });
 
   // Historial de las semanas anteriores para el reporte del administrador.
   const otros = Object.values(pet).filter(m => m.nombre !== 'Rocky' && m.nombre !== 'Mishi');

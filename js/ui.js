@@ -30,6 +30,11 @@ const ICONS = {
   alert: '<path d="M12 3l10 18H2L12 3z"/><path d="M12 10v5M12 18h.01"/>',
   trash: '<path d="M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3"/>',
   refresh: '<path d="M20 11a8 8 0 10-2.3 5.7M20 4v7h-7"/>',
+  spark: '<path d="M12 3l1.8 4.7 4.7 1.8-4.7 1.8L12 16l-1.8-4.7-4.7-1.8 4.7-1.8L12 3z"/><path d="M19 15l.8 2.2 2.2.8-2.2.8L19 21l-.8-2.2-2.2-.8 2.2-.8L19 15z"/>',
+  camera: '<path d="M4 8h3l2-3h6l2 3h3a1 1 0 011 1v10a1 1 0 01-1 1H4a1 1 0 01-1-1V9a1 1 0 011-1z"/><circle cx="12" cy="13" r="4"/>',
+  mic: '<rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0014 0M12 18v3"/>',
+  send: '<path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z"/>',
+  phone: '<path d="M5 4h4l2 5-2.5 1.5a11 11 0 005 5L15 13l5 2v4a2 2 0 01-2 2A16 16 0 013 6a2 2 0 012-2z"/>',
 };
 const ic = (n, size = 20) => `<svg class="ico" width="${size}" height="${size}" viewBox="0 0 24 24" aria-hidden="true" focusable="false">${ICONS[n]}</svg>`;
 const chip = (estado, label) => `<span class="chip ${ESTADOS[estado].cls}">${label || ESTADOS[estado].label}</span>`;
@@ -132,6 +137,16 @@ function optCard({ on, a, id, lead = '', title, sub = '' }) {
   return `<button type="button" class="opt-card ${on ? 'on' : ''}" role="radio" aria-checked="${on}" data-a="${a}" data-id="${id}">${lead}<span class="grow min0"><b class="block">${esc(title)}</b>${sub ? `<span class="small muted block">${esc(sub)}</span>` : ''}</span><span class="tick">${on ? ic('check', 14) : ''}</span></button>`;
 }
 
+/* Barra lateral de escritorio; en pantallas angostas se convierte en barra superior (o se oculta para el dueño). */
+function sideNav({ items, active, u, nombre, rol, cls = '' }) {
+  return `<nav class="side ${cls}" aria-label="Menú principal">
+      <div class="brand"><span class="logo">${ic('paw', 22)}</span><b>VetCitas</b></div>
+      ${items.map(([k, i, l, h, badge]) => `<a class="it ${k === active ? 'on' : ''}" href="${h}"${k === active ? ' aria-current="page"' : ''}>${ic(i, 19)}<span>${l}</span>${badge ? `<span class="side-badge">${badge}<span class="sr"> sin leer</span></span>` : ''}</a>`).join('')}
+      <div class="spacer"></div>
+      <div class="who"><span class="avatar">${esc(iniciales(u))}</span><div class="min0"><p class="n ellip">${esc(nombre)}</p><p class="r">${rol}</p></div></div>
+      <button type="button" class="it out" data-a="logout" aria-label="Cerrar sesión">${ic('out', 19)}<span>Cerrar sesión</span></button>
+    </nav>`;
+}
 /* Estructura de escritorio para veterinario y administrador (P07–P10). */
 function deskShell(body, active, extra = '') {
   const u = Session.user(), admin = u.rol === 'ADMIN';
@@ -139,13 +154,23 @@ function deskShell(body, active, extra = '') {
     ? [['resumen', 'chart', 'Resumen', '#/a/resumen'], ['servicios', 'tag', 'Servicios', '#/a/servicios'], ['veterinarios', 'users', 'Veterinarios', '#/a/veterinarios'], ['agenda', 'cal', 'Agenda general', '#/a/agenda']]
     : [['agenda', 'cal', 'Agenda', '#/v/agenda'], ['horario', 'clock', 'Horario y bloqueos', '#/v/horario'], ['pacientes', 'paw', 'Historial de pacientes', '#/v/pacientes']];
   const nombre = admin ? `${u.nombres} ${u.apellidos}` : `MV ${u.nombres} ${u.apellidos.split(' ')[0]}`;
-  return `<div class="d-shell">
-    <nav class="side" aria-label="Menú principal">
-      <div class="brand"><span class="logo">${ic('paw', 22)}</span><b>VetCitas</b></div>
-      ${items.map(([k, i, l, h]) => `<a class="it ${k === active ? 'on' : ''}" href="${h}"${k === active ? ' aria-current="page"' : ''}>${ic(i, 19)}<span>${l}</span></a>`).join('')}
-      <div class="spacer"></div>
-      <div class="who"><span class="avatar">${esc(iniciales(u))}</span><div class="min0"><p class="n ellip">${esc(nombre)}</p><p class="r">${admin ? 'Administrador' : 'Médico veterinario'}</p></div></div>
-      <button type="button" class="it out" data-a="logout" aria-label="Cerrar sesión">${ic('out', 19)}<span>Cerrar sesión</span></button>
-    </nav>
+  return `<div class="d-shell">${sideNav({ items, active, u, nombre, rol: admin ? 'Administrador' : 'Médico veterinario' })}
     <main class="d-main" id="main">${body}</main>${extra}</div>`;
 }
+
+/* Resumen que arma el asistente IA y que acompaña a la cita (lo leen el dueño y el veterinario). */
+const ORIGEN_IA = { asistente: 'Triage del asistente IA', recomendacion: 'Propuesta preventiva de la IA', cotizacion: 'Cotización del asistente IA', prevencion: 'Agendada con el asistente IA' };
+function iaCard(ia, vet = false) {
+  if (!ia) return '';
+  const resp = Object.entries(ia.respuestas || {});
+  return `<section class="ia-card" aria-label="Resumen del asistente IA">
+    <div class="row between gap8 wrap"><span class="ia-tag">${ic('spark', 14)} ${vet ? ORIGEN_IA[ia.origen] || 'Asistente IA' : 'Resumen que verá tu veterinario'}</span>${ia.urgencia === 'alta' ? '<span class="chip noas">Prioridad alta</span>' : ''}</div>
+    <p class="small mt8">${esc(ia.resumen)}</p>
+    ${ia.area || resp.length ? `<div class="kv sm mt8">${ia.area ? `<div><span>Área probable</span><b>${esc(ia.area)}</b></div>` : ''}${resp.map(([k, v]) => `<div><span>${esc(k)}</span><b>${esc(v)}</b></div>`).join('')}</div>` : ''}
+    ${ia.voz ? `<p class="small mt8"><span class="muted">Nota de voz transcrita:</span> «${esc(ia.voz)}»</p>` : ''}
+    ${ia.cotizacion ? `<p class="small mt8"><span class="muted">Cotización estimada:</span> <b>${money(ia.cotizacion.min)} – ${money(ia.cotizacion.max)}</b> (${esc(ia.cotizacion.proc)})</p>` : ''}
+    ${ia.fotos && ia.fotos.length ? `<div class="ia-fotos">${ia.fotos.map(f => `<button type="button" data-a="verFoto" aria-label="Ampliar foto"><img src="${f}" alt="Foto enviada por el dueño"></button>`).join('')}</div>` : ''}
+    ${vet ? '<p class="xs muted mt8">Generado automáticamente con lo que contó el dueño; confírmalo en la consulta.</p>' : ''}
+  </section>`;
+}
+ACT.verFoto = el => openModal(`${modalHead('Foto enviada por el dueño')}<img class="foto-full" src="${el.querySelector('img').src}" alt="Foto enviada por el dueño">`);
