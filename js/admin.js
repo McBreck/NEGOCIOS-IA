@@ -30,10 +30,10 @@ function servTable() {
 }
 function vetTable(full) {
   const vig = v => db.citas.filter(c => c.id_vet === v.id && VIGENTES.includes(c.estado) && ms(c.inicio) > Date.now()).length;
-  return `<div class="tbl-wrap"><table class="tbl"><thead><tr><th>Nombre</th>${full ? '<th>Correo</th>' : ''}<th>CMVP</th><th>Especialidad</th>${full ? '<th>Citas próximas</th>' : ''}<th>Activo</th><th><span class="sr">Editar</span></th></tr></thead><tbody>
+  return `<div class="tbl-wrap"><table class="tbl"><thead><tr><th>Nombre</th>${full ? '<th>Correo</th>' : ''}<th>CMVP</th><th>Especialidad</th>${full ? '<th>Áreas para la IA</th>' : ''}${full ? '<th>Citas próximas</th>' : ''}<th>Activo</th><th><span class="sr">Editar</span></th></tr></thead><tbody>
     ${db.veterinarios.map(v => {
       const u = Q.vetUser(v.id);
-      return `<tr><td><b>${esc(Q.vetName(v.id, 'completo'))}</b></td>${full ? `<td>${esc(u.correo)}</td>` : ''}<td>${esc(v.cmvp)}</td><td>${esc(v.especialidad || '—')}</td>${full ? `<td>${vig(v)}</td>` : ''}
+      return `<tr><td><b>${esc(Q.vetName(v.id, 'completo'))}</b></td>${full ? `<td>${esc(u.correo)}</td>` : ''}<td>${esc(v.cmvp)}</td><td>${esc(v.especialidad || '—')}</td>${full ? `<td class="small">${esc((v.areas || []).join(', ') || '—')}</td><td>${vig(v)}</td>` : ''}
         <td><button type="button" class="toggle" role="switch" aria-checked="${u.activo}" aria-label="Cuenta de ${esc(Q.vetName(v.id))} activa" data-a="vetToggle" data-id="${v.id}"></button></td>
         <td class="num">${iconBtn('vetEdit', v.id, 'Editar ' + esc(Q.vetName(v.id)))}</td></tr>`;
     }).join('')}</tbody></table></div>`;
@@ -49,6 +49,17 @@ function porVet(cs) {
       return `<tr><td><b>${esc(Q.vetName(v.id, 'completo'))}</b></td><td class="num">${s.n}</td><td class="num">${s.aten}</td><td class="num">${s.noas}</td><td class="num">${s.canc}</td><td class="num">${s.vig}</td><td class="num">${pct(s.noas, s.n)} %</td></tr>`;
     }).join('')}</tbody></table></div>`;
 }
+/* Impacto del asistente IA en el periodo (para evaluar su adopción). */
+function iaStats(cs) {
+  const [a, b] = rango(), con = cs.filter(c => c.ia);
+  const esp = con.filter(c => !['Medicina general', 'Vacunación'].includes(c.ia.area)).length;
+  const al = db.alertas.filter(x => ms(x.fecha) >= ms(a) && ms(x.fecha) < ms(b)).length;
+  const it = (l, v, sub) => `<div class="mini"><p class="xs muted">${l}</p><p class="v">${v}</p><p class="xs muted">${sub}</p></div>`;
+  return `<section class="card ia-panel" aria-labelledby="ia-t"><div class="row gap8 mb12"><span class="vetty sm" aria-hidden="true">${ic('spark', 14)}</span><h2 id="ia-t">Asistente IA</h2></div>
+    <div class="minis">${it('Citas agendadas con IA', con.length, `${pct(con.length, cs.length)} % de las citas del periodo`)}${it('Prioridad alta', con.filter(c => c.ia.urgencia === 'alta').length, 'según el triage')}
+    ${it('Derivadas a especialista', esp, 'dermatología, traumatología, etc.')}${it('Alertas de emergencia', al, 'redirigidas a urgencias')}</div>
+    <p class="xs muted mt12">Incluye triage de síntomas, recomendaciones preventivas y cotizaciones. El asistente deriva según las áreas de atención de cada veterinario.</p></section>`;
+}
 const rangeInputs = () => `<div class="range"><label class="sr" for="rg-d">Desde</label><input id="rg-d" class="input" type="date" value="${Admin.desde}" max="${Admin.hasta}" data-i="rgDesde">
   <span class="muted">–</span><label class="sr" for="rg-h">Hasta</label><input id="rg-h" class="input" type="date" value="${Admin.hasta}" min="${Admin.desde}" data-i="rgHasta"></div>`;
 
@@ -56,12 +67,14 @@ Admin.resumen = () => {
   const [a, b] = rango(), cs = citasEnRango(), s = stats(cs);
   const body = `<div class="d-head"><div><p class="small muted">Reporte de citas por estado e inasistencias</p><h1 tabindex="-1">Panel de administración</h1></div>
       <div class="row gap8 wrap">${rangeInputs()}<button type="button" class="btn sm pri" data-a="csv">${ic('download', 16)} Descargar reporte</button></div></div>
+    ${alertasHtml()}
     <div class="kpis">${kpi('Citas del periodo', s.n, `${fDate(a)} – ${fDate(addDays(b, -1))}`, 'var(--navy)')}${kpi('Atendidas', s.aten, pct(s.aten, s.n) + ' %', 'var(--aten)')}${kpi('Inasistencias', s.noas, pct(s.noas, s.n) + ' %', 'var(--err)')}${kpi('Canceladas', s.canc, pct(s.canc, s.n) + ' %', 'var(--muted)')}</div>
     <div class="grid2">
       <section class="card p0" aria-labelledby="sv-t"><div class="card-h"><h2 id="sv-t">Servicios</h2><button type="button" class="btn sm sec" data-a="svcNew">${ic('plus', 16)} Nuevo servicio</button></div>${servTable()}</section>
       <section class="card p0" aria-labelledby="mv-t"><div class="card-h"><h2 id="mv-t">Médicos veterinarios</h2><button type="button" class="btn sm sec" data-a="vetNew">${ic('plus', 16)} Nueva cuenta</button></div>${vetTable(false)}
         <div class="bars"><h3 class="mb8">Citas por estado</h3>${bars(s)}</div></section>
     </div>
+    ${iaStats(cs)}
     <section class="card p0" aria-labelledby="pv-t"><div class="card-h"><h2 id="pv-t">Detalle por veterinario</h2></div>${porVet(cs)}</section>`;
   App.render(deskShell(body, 'resumen'));
 };
@@ -157,6 +170,8 @@ function vetForm(v) {
     ${f('v-c', 'correo', 'Correo de acceso', u.correo, 'type="email" inputmode="email" maxlength="120"')}
     <div class="row gap8 top">${f('v-m', 'cmvp', 'N.° de colegiatura (CMVP)', v ? v.cmvp : '', 'inputmode="numeric" maxlength="10"')}${f('v-t', 'telefono', 'Celular (opcional)', u.telefono, 'type="tel" inputmode="numeric" maxlength="11"')}</div>
     ${f('v-e', 'especialidad', 'Especialidad', v ? v.especialidad : '', 'maxlength="60" placeholder="Ej.: Pequeños animales"')}
+    <fieldset class="field"><legend>Áreas de atención</legend><p class="hint" style="margin:-2px 0 8px">El asistente IA deriva a este veterinario los casos de estas áreas.</p>
+      <div class="areas">${AREAS_VET.map(a => `<label class="achip"><input type="checkbox" name="areas" value="${a}" ${(v ? v.areas || [] : ['Medicina general']).includes(a) ? 'checked' : ''}><span>${a}</span></label>`).join('')}</div></fieldset>
     ${v ? '' : `${f('v-p', 'pass', 'Contraseña temporal', 'Vet' + String(Math.floor(10000 + Math.random() * 90000)), 'maxlength="40"')}<p class="hint" style="margin:-8px 0 14px">Compártela con el veterinario; tendrá el horario base de lunes a sábado.</p>`}
     <div class="modal-actions"><button type="button" class="btn sec" data-a="modalClose">Cancelar</button><button class="btn pri">${v ? 'Guardar' : 'Crear cuenta'}</button></div>
   </form>`;
@@ -174,14 +189,16 @@ SUBMIT.vet = f => {
   else if (db.veterinarios.some(x => x.cmvp === val('cmvp') && x.id !== id)) errs.cmvp = 'Ese número de colegiatura ya está registrado.';
   if (tel && !/^9\d{8}$/.test(tel)) errs.telefono = 'Celular de 9 dígitos que empiece con 9.';
   if (!v && f.pass.value.length < 8) errs.pass = 'Mínimo 8 caracteres.';
+  const areas = [...f.querySelectorAll('input[name=areas]:checked')].map(x => x.value);
+  if (!areas.length) errs.areas = 'Elige al menos un área.';
   if (!setErrors(f, errs)) return;
   const datos = { nombres: val('nombres'), apellidos: val('apellidos'), correo: val('correo').toLowerCase(), telefono: tel ? fmtTel(tel) : '' };
   if (v) {
     Object.assign(u, datos);
-    Object.assign(v, { cmvp: val('cmvp'), especialidad: val('especialidad') });
+    Object.assign(v, { cmvp: val('cmvp'), especialidad: val('especialidad'), areas });
   } else {
     const nu = insert('usuarios', { ...datos, pass: f.pass.value, rol: 'VETERINARIO', acepta_datos: true, activo: true, creado_en: nowISO() });
-    horarioBase(insert('veterinarios', { id_usuario: nu.id, cmvp: val('cmvp'), especialidad: val('especialidad') }).id);
+    horarioBase(insert('veterinarios', { id_usuario: nu.id, cmvp: val('cmvp'), especialidad: val('especialidad'), areas }).id);
   }
   Store.save();
   closeModal();

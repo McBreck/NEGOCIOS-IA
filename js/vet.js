@@ -179,7 +179,8 @@ function pacDrawer() {
     ${cs.length ? `<div class="list">${cs.map(c => `<div class="card tight"><div class="row between gap8"><b class="small">${fDate(c.inicio)} · ${fTime(c.inicio)}</b>${chip(c.estado)}</div>
       <p class="small muted mt4">${esc(get('servicios', c.id_servicio).nombre)} · ${esc(Q.vetName(c.id_vet, 'mini'))}</p>
       ${c.motivo ? `<p class="small mt4"><span class="muted">Motivo:</span> ${esc(c.motivo)}</p>` : ''}
-      ${c.observaciones ? `<p class="small mt4"><span class="muted">Observaciones:</span> ${esc(c.observaciones)}</p>` : ''}</div>`).join('')}</div>` : '<p class="small muted">Aún no tiene citas.</p>'}
+      ${c.observaciones ? `<p class="small mt4"><span class="muted">Observaciones:</span> ${esc(c.observaciones)}</p>` : ''}
+      ${c.ia ? `<p class="xs mt4 ia-t">${ic('spark', 12)} ${esc(c.ia.resumen)}</p>` : ''}</div>`).join('')}</div>` : '<p class="small muted">Aún no tiene citas.</p>'}
   </aside>`;
 }
 Vet.pacientes = () => {

@@ -32,7 +32,8 @@ Agenda.view = ({ vetId, admin = false }) => {
       <button type="button" class="btn sm sec" data-a="agHoy">Hoy</button>
       <button type="button" class="btn sm sec icon" data-a="agMove" data-n="-1" aria-label="${isDia ? 'Día anterior' : 'Semana anterior'}">${ic('back', 18)}</button>
       <button type="button" class="btn sm sec icon" data-a="agMove" data-n="1" aria-label="${isDia ? 'Día siguiente' : 'Semana siguiente'}">${ic('chev', 18)}</button></div></div>
-    <div class="ag-bar"><div class="legend">${['PENDIENTE', 'CONFIRMADA', 'REPROGRAMADA', 'ATENDIDA', 'NO_ASISTIO'].map(e => chip(e)).join('')}</div>
+    ${alertasHtml()}
+    <div class="ag-bar"><div class="legend">${['PENDIENTE', 'CONFIRMADA', 'REPROGRAMADA', 'ATENDIDA', 'NO_ASISTIO'].map(e => chip(e)).join('')}<span class="chip ia-chip">${ic('spark', 12)} Con resumen IA</span></div>
       <div class="row gap12 small wrap"><span><b>Hoy:</b> ${plural(hc.length, 'cita', 'citas')}</span>${detalle ? `<span class="muted">${detalle}</span>` : ''}</div></div>
     ${Agenda.grid(vetId, days)}`;
 };
@@ -67,8 +68,9 @@ Agenda.grid = (vetId, days) => {
     const cs = citas.filter(c => sameDay(c.inicio, d)).map(c => {
       const m = get('mascotas', c.id_mascota), sv = get('servicios', c.id_servicio), o = Q.owner(m.id).u, e = ESTADOS[c.estado];
       const top = y(c.inicio), h = Math.max(y(c.fin) - top - 2, 18), short = h < 34;
-      return `<button type="button" class="ag-cita ${e.cls}${short ? ' short' : ''}${A.sel === c.id ? ' sel' : ''}" style="top:${top + 1}px;height:${h}px" data-a="agOpen" data-id="${c.id}" aria-label="${fTime(c.inicio)}, ${esc(m.nombre)}, ${esc(sv.nombre)}, ${e.label}">
-        <b>${fTime(c.inicio)} ${esc(m.nombre)}${short ? ` · ${esc(sv.nombre)}` : ''}</b>${short ? '' : `<span>${esc(sv.nombre)} · ${esc(o.nombres[0])}. ${esc(o.apellidos.split(' ')[0])}</span>`}</button>`;
+      const urg = c.ia && c.ia.urgencia === 'alta' && VIGENTES.includes(c.estado);
+      return `<button type="button" class="ag-cita ${e.cls}${short ? ' short' : ''}${A.sel === c.id ? ' sel' : ''}${urg ? ' urg' : ''}" style="top:${top + 1}px;height:${h}px" data-a="agOpen" data-id="${c.id}" aria-label="${fTime(c.inicio)}, ${esc(m.nombre)}, ${esc(sv.nombre)}, ${e.label}${c.ia ? ', con resumen del asistente IA' : ''}${urg ? ', prioridad alta' : ''}">
+        <b>${c.ia ? `<i class="ia-mark">${ic('spark', 11)}</i>` : ''}${fTime(c.inicio)} ${esc(m.nombre)}${short ? ` · ${esc(sv.nombre)}` : ''}</b>${short ? '' : `<span>${esc(sv.nombre)} · ${esc(o.nombres[0])}. ${esc(o.apellidos.split(' ')[0])}</span>`}</button>`;
     }).join('');
     const nowLine = ms(now) >= ms(d0) && ms(now) <= ms(d1) ? `<div class="ag-now" style="top:${y(now)}px"></div>` : '';
     return `<div class="ag-col ${sameDay(d, now) ? 'today' : ''}" style="height:${H}px">${fondo}${bl}${cs}${nowLine}</div>`;
@@ -113,6 +115,7 @@ Agenda.drawer = (editable, admin = false) => {
       <div><span>Motivo</span><b>${esc(c.motivo || '—')}</b></div>
       <div><span>Recordatorios</span><b class="${recs.length && recs.every(r => r.estado === 'ENVIADO') ? 'ok-t' : ''}">${recTxt}</b></div>
     </div>
+    ${iaCard(c.ia, true)}
     ${tol ? `<div class="note warn">${ic('clock', 18)}<span>Pasaron más de 15 minutos desde la hora de inicio. Si la mascota no llegó, marca «No asistió».</span></div>` : ''}
     ${acc}
     <div><h3 class="mb8">Historial de ${esc(m.nombre)}</h3>${hist.length ? `<div class="tbl-wrap"><table class="tbl"><thead><tr><th>Fecha</th><th>Servicio</th><th>Estado</th></tr></thead><tbody>${hist.map(h => `<tr class="${h.observaciones ? 'has-obs' : ''}"><td>${fDate(h.inicio)}</td><td>${esc(get('servicios', h.id_servicio).nombre)}</td><td>${chip(h.estado)}</td></tr>${h.observaciones ? `<tr class="obs"><td colspan="3">${esc(h.observaciones)}</td></tr>` : ''}`).join('')}</tbody></table></div>` : `<p class="small muted">Es la primera cita de ${esc(m.nombre)}.</p>`}</div>
@@ -144,3 +147,23 @@ Object.assign(ACT, {
   },
   agObs(el) { guardarObs(+el.dataset.id, document.getElementById('obs').value); toast('Observaciones guardadas.'); App.refresh(); },
 });
+
+/* Alertas de emergencia que levantó el asistente IA (código rojo); las ven veterinarios y administrador. */
+function alertasHtml() {
+  const as = db.alertas.filter(a => a.estado === 'ABIERTA').sort(by(a => a.fecha, -1));
+  if (!as.length) return '';
+  return `<section class="alerts" aria-label="Alertas de emergencia">${as.map(a => {
+    const u = get('usuarios', a.id_usuario), m = a.id_mascota && get('mascotas', a.id_mascota);
+    return `<div class="alert-row" role="alert"><span class="al-ic" aria-hidden="true">🚨</span>
+      <div class="grow min0"><p class="small"><b>Emergencia detectada por el asistente IA</b> · ${sameDay(a.fecha, new Date()) ? 'hoy' : fDM(a.fecha)} a las ${fTime(a.fecha)}</p>
+      <p class="small">${m ? `<b>${esc(m.nombre)}</b> (${esc(petLine(m))})` : 'Mascota sin especificar'} · ${esc(a.motivo)}${a.detalle ? ` · «${esc(a.detalle)}»` : ''}</p>
+      <p class="xs">${esc(u.nombres)} ${esc(u.apellidos)} · ${u.telefono ? `<a href="tel:${u.telefono.replace(/\D/g, '')}">${esc(u.telefono)}</a>` : 'sin celular'}</p></div>
+      <button type="button" class="btn sm white" data-a="alertaOk" data-id="${a.id}">Marcar atendida</button></div>`;
+  }).join('')}</section>`;
+}
+ACT.alertaOk = el => {
+  Object.assign(get('alertas', el.dataset.id), { estado: 'ATENDIDA', atendida_por: Session.uid(), atendida_en: nowISO() });
+  Store.save();
+  toast('Alerta marcada como atendida.');
+  App.refresh();
+};
