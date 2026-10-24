@@ -7,13 +7,24 @@ const DEMO = [
   ['Administrador', 'admin@vetcitas.pe', 'Admin2026'],
 ];
 const pwField = (id, name, auto) => `<div class="pw"><input class="input" id="${id}" name="${name}" type="password" autocomplete="${auto}"><button type="button" data-a="togglePass" aria-label="Mostrar contraseña">${ic('eye', 20)}</button></div>`;
-const authShell = (body, top = '') => `<div class="m-shell"><div class="m-app">${top}<main class="m-content" id="main">${body}</main></div></div>`;
+/* En escritorio se muestra a la izquierda un panel de presentación; en el celular solo el formulario. */
+const authShell = (body, top = '') => `<div class="auth-wrap">
+  <aside class="auth-hero" aria-hidden="true"><div class="ah-in">
+    <div class="row gap12"><span class="logo">${ic('paw', 24)}</span><b class="ah-brand">VetCitas</b></div>
+    <h2>Citas veterinarias con un asistente de inteligencia artificial</h2>
+    <ul>
+      <li>${ic('spark', 18)}<span><b>Vetty evalúa los síntomas</b> y detecta emergencias antes de agendar.</span></li>
+      <li>${ic('users', 18)}<span><b>Te deriva al especialista</b> y elige la duración y el horario adecuados.</span></li>
+      <li>${ic('bell', 18)}<span><b>Recordatorios y recomendaciones</b> según el historial de tu mascota.</span></li>
+      <li>${ic('cal', 18)}<span><b>Agenda sin cruces</b> para el veterinario, con el resumen de cada caso.</span></li>
+    </ul></div></aside>
+  <div class="m-app auth-app">${top}<main class="m-content" id="main">${body}</main></div></div>`;
 
 Auth.login = () => {
   App.render(authShell(`
     <div class="auth-logo">${ic('paw', 34)}</div>
     <h1 class="mt16" tabindex="-1">VetCitas</h1>
-    <p class="muted mt4">Reserva y controla las citas de tu mascota desde tu celular.</p>
+    <p class="muted mt4">Reserva las citas de tu mascota con ayuda de Vetty, nuestro asistente con inteligencia artificial.</p>
     <form class="mt24" data-f="login" novalidate>
       <div id="login-err"></div>
       <div class="field"><label for="l-c">Correo electrónico</label><input class="input" id="l-c" name="correo" type="email" inputmode="email" autocomplete="username" placeholder="tucorreo@ejemplo.com"></div>
