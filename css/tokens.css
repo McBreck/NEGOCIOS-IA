@@ -1,0 +1,44 @@
+/* Tokens de diseño compartidos por la landing y la aplicación. */
+:root {
+  /* Paleta de marca (valores exactos de la guía; para íconos, bordes y elementos decorativos) */
+  --c-accent: #F39C34;
+  --c-yellow: #F5B83D;
+  --c-wine: #9B4A5C;
+  --c-teal: #4AA3A2;
+  --c-secondary: #5DB59B;
+
+  /* Variantes AA: mismo tono, oscurecido para texto o fondos con texto blanco (≥ 4.5:1) */
+  --c-accent-ink: #A85A0B;
+  --c-accent-ink-2: #8F4C08;
+  --c-secondary-ink: #2C7A66;
+  --c-secondary-ink-2: #24665A;
+  --c-accent-soft: #FEF3E6;
+  --c-secondary-soft: #E7F4EF;
+  --c-wine-soft: #F7ECEF;
+
+  /* Superficies y texto */
+  --c-bg: #FFFFFF;
+  --c-bg-alt: #F5F5F5;
+  --c-text: #444444;
+  --c-text-2: #707070;
+  --c-heading: #2B2B2B;
+  --c-line: #E5E5E5;
+
+  /* Tipografía */
+  --f-serif: "Playfair Display", Georgia, "Times New Roman", serif;
+  --f-sans: "Open Sans", Lato, system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+  --fs-base: 15px;
+  --lh-base: 1.6;
+
+  /* Forma, sombra y movimiento */
+  --r-sm: 4px;
+  --r: 8px;
+  --r-lg: 12px;
+  --shadow: 0 2px 10px rgba(0, 0, 0, .05);
+  --shadow-hover: 0 8px 22px rgba(0, 0, 0, .08);
+  --t: 200ms ease;
+
+  /* Maquetación */
+  --container: 1170px;
+  --gutter: 30px;
+}

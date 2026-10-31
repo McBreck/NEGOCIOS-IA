@@ -22,6 +22,7 @@ const authShell = (body, top = '') => `<div class="auth-wrap">
 
 Auth.login = () => {
   App.render(authShell(`
+    <a class="btn link auth-back" href="#/">${ic('back', 16)} Volver al inicio</a>
     <div class="auth-logo">${ic('paw', 34)}</div>
     <h1 class="mt16" tabindex="-1">VetCitas</h1>
     <p class="muted mt4">Reserva las citas de tu mascota con ayuda de Vetty, nuestro asistente con inteligencia artificial.</p>

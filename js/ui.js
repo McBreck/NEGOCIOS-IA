@@ -35,6 +35,16 @@ const ICONS = {
   mic: '<rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0014 0M12 18v3"/>',
   send: '<path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z"/>',
   phone: '<path d="M5 4h4l2 5-2.5 1.5a11 11 0 005 5L15 13l5 2v4a2 2 0 01-2 2A16 16 0 013 6a2 2 0 012-2z"/>',
+  menu: '<path d="M4 6h16M4 12h16M4 18h16"/>',
+  arrow: '<path d="M5 12h14M13 6l6 6-6 6"/>',
+  pin: '<path d="M12 21s-7-6.2-7-12a7 7 0 0114 0c0 5.8-7 12-7 12z"/><circle cx="12" cy="9" r="2.5"/>',
+  heart: '<path d="M12 20s-8-4.8-8-11a4.5 4.5 0 018-2.8A4.5 4.5 0 0120 9c0 6.2-8 11-8 11z"/>',
+  quote: '<path d="M7 7h4v5c0 3-2 5-4 5M14 7h4v5c0 3-2 5-4 5"/>',
+  pause: '<path d="M8 5v14M16 5v14"/>',
+  play: '<path d="M7 5l12 7-12 7V5z"/>',
+  fb: '<path d="M15 3h-2.5A3.5 3.5 0 009 6.5V10H6v4h3v7h4v-7h3l1-4h-4V7a1 1 0 011-1h2V3z"/>',
+  ig: '<rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/><path d="M17.5 6.5h.01"/>',
+  wa: '<path d="M20 11.5a8.5 8.5 0 01-12.6 7.4L3 20l1.2-4.2A8.5 8.5 0 1120 11.5z"/><path d="M9 8.5c0 3.5 3 6.5 6.5 6.5l1-1.5-2-1-1 1a4 4 0 01-2.5-2.5l1-1-1-2L9 8.5z"/>',
 };
 const ic = (n, size = 20) => `<svg class="ico" width="${size}" height="${size}" viewBox="0 0 24 24" aria-hidden="true" focusable="false">${ICONS[n]}</svg>`;
 const chip = (estado, label) => `<span class="chip ${ESTADOS[estado].cls}">${label || ESTADOS[estado].label}</span>`;

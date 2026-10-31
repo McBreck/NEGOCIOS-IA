@@ -10,7 +10,9 @@ const Session = {
   clear() { Session.mem = null; try { sessionStorage.removeItem(SES_KEY); } catch (e) { /* sin almacenamiento */ } },
 };
 
+/* rol '*': pública para todos; null: solo sin sesión; otro valor: solo ese rol. */
 const ROUTES = [
+  ['#/', '*', () => Landing.page()],
   ['#/login', null, () => Auth.login()],
   ['#/registro', null, () => Auth.registro()],
   ['#/d/inicio', 'DUENO', () => Owner.home()],
@@ -58,13 +60,16 @@ const App = {
   },
   route() {
     procesarRecordatorios();
-    const hash = location.hash || '#/login', u = Session.user();
+    const hash = location.hash || '#/', u = Session.user();
     if (u && u.rol === 'DUENO') IA.notificarRecomendaciones(u.id);
     for (const [re, rol, fn] of ROUTES) {
       const m = hash.match(re);
       if (!m) continue;
-      if (rol && (!u || u.rol !== rol)) return go(u ? HOME[u.rol] : '#/login', true);
-      if (!rol && u) return go(HOME[u.rol], true);
+      if (rol !== '*') {
+        if (rol && (!u || u.rol !== rol)) return go(u ? HOME[u.rol] : '#/login', true);
+        if (!rol && u) return go(HOME[u.rol], true);
+      }
+      if (rol !== '*') Landing.stop();
       App.changed = hash !== App.last;
       App.last = hash;
       if (App.changed) { closeModal(); window.scrollTo(0, 0); }
@@ -75,7 +80,7 @@ const App = {
       }
       return;
     }
-    go(u ? HOME[u.rol] : '#/login', true);
+    go(u ? HOME[u.rol] : '#/', true);
   },
   refresh() { App.route(); },
   startSession(u) {
@@ -98,7 +103,7 @@ ACT.logout = () => {
   Owner.draft = null;
   Agenda.st.sel = null;
   Vet.pet = null;
-  go('#/login');
+  go('#/');
   toast('Sesión cerrada.', 'info');
 };
 

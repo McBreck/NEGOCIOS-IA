@@ -1,0 +1,57 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 640" preserveAspectRatio="xMidYMid slice">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#FEF4DC"/>
+      <stop offset="1" stop-color="#F9DDA2"/>
+    </linearGradient>
+  </defs>
+  <rect width="1600" height="640" fill="url(#bg)"/>
+  <circle cx="1500" cy="560" r="200" fill="#F39C34" opacity=".2"/>
+  <circle cx="700" cy="560" r="120" fill="#FFFFFF" opacity=".45"/>
+  <circle cx="200" cy="120" r="150" fill="#9B4A5C" opacity=".1"/>
+
+  <!-- Calendario -->
+  <g transform="rotate(4 1060 320)">
+    <rect x="880" y="96" width="380" height="440" rx="18" fill="#000" opacity=".08" transform="translate(8 12)"/>
+    <rect x="880" y="96" width="380" height="440" rx="18" fill="#FFFFFF"/>
+    <path d="M880 114 a18 18 0 0 1 18 -18 h344 a18 18 0 0 1 18 18 v76 h-380z" fill="#F39C34"/>
+    <rect x="950" y="70" width="18" height="60" rx="9" fill="#2B2B2B"/>
+    <rect x="1172" y="70" width="18" height="60" rx="9" fill="#2B2B2B"/>
+    <rect x="1000" y="132" width="140" height="16" rx="8" fill="#fff"/>
+    <g fill="#F5F5F5">
+      <rect x="906" y="214" width="56" height="56" rx="8"/><rect x="972" y="214" width="56" height="56" rx="8"/><rect x="1038" y="214" width="56" height="56" rx="8"/><rect x="1104" y="214" width="56" height="56" rx="8"/><rect x="1170" y="214" width="56" height="56" rx="8"/>
+      <rect x="906" y="280" width="56" height="56" rx="8"/><rect x="972" y="280" width="56" height="56" rx="8"/><rect x="1104" y="280" width="56" height="56" rx="8"/><rect x="1170" y="280" width="56" height="56" rx="8"/>
+      <rect x="906" y="346" width="56" height="56" rx="8"/><rect x="972" y="346" width="56" height="56" rx="8"/><rect x="1038" y="346" width="56" height="56" rx="8"/><rect x="1104" y="346" width="56" height="56" rx="8"/><rect x="1170" y="346" width="56" height="56" rx="8"/>
+      <rect x="906" y="412" width="56" height="56" rx="8"/><rect x="972" y="412" width="56" height="56" rx="8"/><rect x="1038" y="412" width="56" height="56" rx="8"/>
+    </g>
+    <rect x="1038" y="280" width="56" height="56" rx="8" fill="#2C7A66"/>
+    <path d="M1052 308 l10 10 l20 -22" stroke="#fff" stroke-width="6" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+    <rect x="1104" y="412" width="56" height="56" rx="8" fill="#F7ECEF"/>
+    <circle cx="1132" cy="440" r="8" fill="#9B4A5C"/>
+  </g>
+
+  <!-- Reloj -->
+  <g>
+    <circle cx="1350" cy="190" r="86" fill="#4AA3A2"/>
+    <circle cx="1350" cy="190" r="68" fill="#FFFFFF"/>
+    <path d="M1350 146 v44 l30 20" stroke="#2B2B2B" stroke-width="8" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+    <circle cx="1350" cy="190" r="7" fill="#F39C34"/>
+  </g>
+
+  <!-- Gato asomado -->
+  <g>
+    <path d="M1250 470 L1258 400 L1302 446Z" fill="#E4934A"/>
+    <path d="M1390 470 L1382 400 L1338 446Z" fill="#E4934A"/>
+    <path d="M1262 456 L1266 422 L1290 446Z" fill="#F6C6A6"/>
+    <path d="M1378 456 L1374 422 L1350 446Z" fill="#F6C6A6"/>
+    <ellipse cx="1320" cy="540" rx="96" ry="88" fill="#E4934A"/>
+    <path d="M1250 500 q 20 -10 30 6 M1360 506 q 10 -16 30 -6" stroke="#C9772E" stroke-width="8" fill="none" stroke-linecap="round"/>
+    <ellipse cx="1290" cy="528" rx="12" ry="15" fill="#2B2B2B"/>
+    <ellipse cx="1350" cy="528" rx="12" ry="15" fill="#2B2B2B"/>
+    <circle cx="1294" cy="523" r="4" fill="#fff"/>
+    <circle cx="1354" cy="523" r="4" fill="#fff"/>
+    <path d="M1310 556 h20 l-10 11Z" fill="#E87A86"/>
+    <path d="M1286 560 h-50 M1288 572 l-46 10 M1354 560 h50 M1352 572 l46 10" stroke="#FCE7D6" stroke-width="3" stroke-linecap="round"/>
+    <rect x="1190" y="590" width="270" height="60" rx="10" fill="#FFFFFF"/>
+  </g>
+</svg>

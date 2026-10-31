@@ -62,11 +62,15 @@ Reglas de negocio aplicadas: sin cruces de horario por veterinario ni por mascot
 
 ```text
 index.html        Punto de entrada
-css/styles.css    Estilos (guía de estilo de los prototipos, responsivo de 360 a 1920 px)
+css/tokens.css    Tokens de diseño compartidos (colores, tipografía, radios, sombras)
+css/styles.css    Estilos de la aplicación (responsivo de 360 a 1920 px)
+css/landing.css   Estilos de la landing pública (grid de 12 columnas, mobile-first)
+assets/*.svg      Ilustraciones propias del hero y de «Sobre nosotros»
 js/util.js        Fechas y formatos
 js/store.js       Base de datos simulada, reglas de negocio y datos de ejemplo
 js/ui.js          Componentes compartidos (iconos, modales, avisos)
 js/auth.js        Inicio de sesión y registro
+js/landing.js     Landing pública (#/), un componente por función
 js/ia.js          Motor del asistente IA (triage, derivación, horarios, recomendaciones, cotización)
 js/asistente.js   Chat del asistente IA (texto, foto y voz)
 js/owner.js       Vista del dueño de mascota

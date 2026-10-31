@@ -1,0 +1,68 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 640" preserveAspectRatio="xMidYMid slice">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#FDEBD5"/>
+      <stop offset="1" stop-color="#F8D3A9"/>
+    </linearGradient>
+  </defs>
+  <rect width="1600" height="640" fill="url(#bg)"/>
+  <circle cx="1480" cy="90" r="160" fill="#F5B83D" opacity=".35"/>
+  <circle cx="120" cy="560" r="200" fill="#F39C34" opacity=".14"/>
+  <circle cx="660" cy="120" r="70" fill="#FFFFFF" opacity=".45"/>
+  <g fill="#9B4A5C" opacity=".18">
+    <g transform="translate(560 420) rotate(-20)"><circle cx="-18" cy="-8" r="9"/><circle cx="-6" cy="-24" r="9"/><circle cx="10" cy="-24" r="9"/><circle cx="22" cy="-8" r="9"/><ellipse cx="2" cy="12" rx="20" ry="16"/></g>
+    <g transform="translate(700 520) rotate(15)"><circle cx="-18" cy="-8" r="9"/><circle cx="-6" cy="-24" r="9"/><circle cx="10" cy="-24" r="9"/><circle cx="22" cy="-8" r="9"/><ellipse cx="2" cy="12" rx="20" ry="16"/></g>
+  </g>
+  <ellipse cx="1080" cy="610" rx="420" ry="40" fill="#E2AE76" opacity=".55"/>
+
+  <!-- Hoja decorativa -->
+  <g transform="translate(1440 420)">
+    <path d="M0 190 C -10 120 10 40 0 -40" stroke="#4AA3A2" stroke-width="8" fill="none" stroke-linecap="round"/>
+    <path d="M0 40 C -70 20 -90 -40 -80 -70 C -40 -60 -5 -20 0 40Z" fill="#5DB59B"/>
+    <path d="M0 100 C 70 80 95 20 88 -10 C 45 0 8 40 0 100Z" fill="#4AA3A2"/>
+    <path d="M0 -10 C 50 -30 60 -80 52 -110 C 20 -95 0 -60 0 -10Z" fill="#5DB59B"/>
+  </g>
+
+  <!-- Perro -->
+  <g>
+    <ellipse cx="960" cy="480" rx="150" ry="125" fill="#C98A4B"/>
+    <ellipse cx="960" cy="495" rx="82" ry="95" fill="#F3DCC0"/>
+    <ellipse cx="895" cy="598" rx="44" ry="22" fill="#B87A3D"/>
+    <ellipse cx="1025" cy="598" rx="44" ry="22" fill="#B87A3D"/>
+    <ellipse cx="855" cy="285" rx="46" ry="88" fill="#8E5A2B" transform="rotate(22 855 285)"/>
+    <ellipse cx="1065" cy="285" rx="46" ry="88" fill="#8E5A2B" transform="rotate(-22 1065 285)"/>
+    <circle cx="960" cy="300" r="118" fill="#C98A4B"/>
+    <ellipse cx="960" cy="350" rx="64" ry="50" fill="#F3DCC0"/>
+    <circle cx="918" cy="275" r="12" fill="#3A2A20"/>
+    <circle cx="1002" cy="275" r="12" fill="#3A2A20"/>
+    <circle cx="922" cy="271" r="4" fill="#fff"/>
+    <circle cx="1006" cy="271" r="4" fill="#fff"/>
+    <ellipse cx="960" cy="325" rx="23" ry="16" fill="#3A2A20"/>
+    <path d="M960 340 v18 M960 358 q -18 15 -33 2 M960 358 q 18 15 33 2" stroke="#3A2A20" stroke-width="5" fill="none" stroke-linecap="round"/>
+    <path d="M948 366 q 12 30 24 0Z" fill="#E87A86"/>
+    <rect x="872" y="398" width="176" height="24" rx="12" fill="#4AA3A2"/>
+    <circle cx="960" cy="440" r="18" fill="#F5B83D"/>
+    <path d="M953 440 h14 M960 433 v14" stroke="#fff" stroke-width="4" stroke-linecap="round"/>
+  </g>
+
+  <!-- Gato -->
+  <g>
+    <path d="M1290 570 C 1380 560 1400 470 1360 420" stroke="#8A8A96" stroke-width="22" fill="none" stroke-linecap="round"/>
+    <ellipse cx="1240" cy="500" rx="96" ry="102" fill="#A2A2AE"/>
+    <ellipse cx="1240" cy="515" rx="52" ry="72" fill="#EDEDF2"/>
+    <ellipse cx="1200" cy="598" rx="34" ry="18" fill="#8A8A96"/>
+    <ellipse cx="1280" cy="598" rx="34" ry="18" fill="#8A8A96"/>
+    <path d="M1172 335 L1178 258 L1228 305Z" fill="#A2A2AE"/>
+    <path d="M1308 335 L1302 258 L1252 305Z" fill="#A2A2AE"/>
+    <path d="M1182 318 L1186 280 L1212 304Z" fill="#E8A3AE"/>
+    <path d="M1298 318 L1294 280 L1268 304Z" fill="#E8A3AE"/>
+    <circle cx="1240" cy="365" r="82" fill="#A2A2AE"/>
+    <ellipse cx="1210" cy="352" rx="13" ry="16" fill="#7DB37A"/>
+    <ellipse cx="1270" cy="352" rx="13" ry="16" fill="#7DB37A"/>
+    <ellipse cx="1210" cy="352" rx="4" ry="12" fill="#2B2B2B"/>
+    <ellipse cx="1270" cy="352" rx="4" ry="12" fill="#2B2B2B"/>
+    <path d="M1230 380 h20 l-10 11Z" fill="#E87A86"/>
+    <path d="M1240 391 q -10 12 -20 4 M1240 391 q 10 12 20 4" stroke="#5E5E68" stroke-width="3.5" fill="none" stroke-linecap="round"/>
+    <path d="M1200 385 h-50 M1202 396 l-46 10 M1280 385 h50 M1278 396 l46 10" stroke="#EDEDF2" stroke-width="3" stroke-linecap="round"/>
+  </g>
+</svg>

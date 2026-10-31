@@ -1,0 +1,65 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 640" preserveAspectRatio="xMidYMid slice">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#E4F3EE"/>
+      <stop offset="1" stop-color="#C5E5DA"/>
+    </linearGradient>
+  </defs>
+  <rect width="1600" height="640" fill="url(#bg)"/>
+  <circle cx="1450" cy="540" r="220" fill="#4AA3A2" opacity=".16"/>
+  <circle cx="620" cy="110" r="90" fill="#FFFFFF" opacity=".5"/>
+  <circle cx="160" cy="80" r="140" fill="#F5B83D" opacity=".18"/>
+  <g fill="#F39C34">
+    <path transform="translate(820 150) scale(2.2)" d="M12 3l1.8 4.7 4.7 1.8-4.7 1.8L12 16l-1.8-4.7-4.7-1.8 4.7-1.8L12 3z"/>
+    <path transform="translate(1360 120) scale(1.6)" d="M12 3l1.8 4.7 4.7 1.8-4.7 1.8L12 16l-1.8-4.7-4.7-1.8 4.7-1.8L12 3z"/>
+    <path transform="translate(1400 330) scale(1.1)" d="M12 3l1.8 4.7 4.7 1.8-4.7 1.8L12 16l-1.8-4.7-4.7-1.8 4.7-1.8L12 3z"/>
+  </g>
+
+  <!-- Teléfono con el chat del asistente -->
+  <g transform="rotate(-6 1080 330)">
+    <rect x="930" y="60" width="300" height="560" rx="40" fill="#2B2B2B"/>
+    <rect x="946" y="78" width="268" height="524" rx="28" fill="#FFFFFF"/>
+    <rect x="946" y="78" width="268" height="74" rx="28" fill="#2C7A66"/>
+    <rect x="946" y="122" width="268" height="30" fill="#2C7A66"/>
+    <circle cx="988" cy="115" r="20" fill="#F39C34"/>
+    <path d="M988 103l2.4 6.2 6.2 2.4-6.2 2.4-2.4 6.2-2.4-6.2-6.2-2.4 6.2-2.4z" fill="#fff"/>
+    <rect x="1020" y="104" width="90" height="10" rx="5" fill="#fff"/>
+    <rect x="1020" y="120" width="60" height="8" rx="4" fill="#BFE0D6"/>
+    <rect x="966" y="176" width="180" height="56" rx="14" fill="#F7ECEF"/>
+    <rect x="980" y="192" width="140" height="8" rx="4" fill="#9B4A5C" opacity=".7"/>
+    <rect x="980" y="208" width="100" height="8" rx="4" fill="#9B4A5C" opacity=".45"/>
+    <rect x="1030" y="250" width="164" height="46" rx="14" fill="#2C7A66"/>
+    <rect x="1046" y="266" width="120" height="8" rx="4" fill="#fff" opacity=".9"/>
+    <rect x="1046" y="280" width="80" height="6" rx="3" fill="#fff" opacity=".6"/>
+    <rect x="966" y="314" width="200" height="74" rx="14" fill="#F7ECEF"/>
+    <rect x="980" y="330" width="160" height="8" rx="4" fill="#9B4A5C" opacity=".7"/>
+    <rect x="980" y="346" width="130" height="8" rx="4" fill="#9B4A5C" opacity=".45"/>
+    <rect x="980" y="362" width="90" height="8" rx="4" fill="#9B4A5C" opacity=".45"/>
+    <rect x="966" y="404" width="72" height="54" rx="10" fill="#FEF3E6" stroke="#F39C34" stroke-width="2"/>
+    <rect x="1046" y="404" width="72" height="54" rx="10" fill="#FEF3E6" stroke="#F39C34" stroke-width="2"/>
+    <rect x="1126" y="404" width="72" height="54" rx="10" fill="#FEF3E6" stroke="#F39C34" stroke-width="2"/>
+    <rect x="980" y="420" width="44" height="10" rx="5" fill="#F39C34"/>
+    <rect x="1060" y="420" width="44" height="10" rx="5" fill="#F39C34"/>
+    <rect x="1140" y="420" width="44" height="10" rx="5" fill="#F39C34"/>
+    <rect x="980" y="438" width="30" height="7" rx="3.5" fill="#E2AE76"/>
+    <rect x="1060" y="438" width="30" height="7" rx="3.5" fill="#E2AE76"/>
+    <rect x="1140" y="438" width="30" height="7" rx="3.5" fill="#E2AE76"/>
+    <rect x="962" y="540" width="236" height="40" rx="20" fill="#F5F5F5"/>
+    <circle cx="1176" cy="560" r="14" fill="#2C7A66"/>
+  </g>
+
+  <!-- Perro asomado -->
+  <g>
+    <ellipse cx="1340" cy="610" rx="150" ry="60" fill="#E9C9A0"/>
+    <ellipse cx="1278" cy="470" rx="34" ry="70" fill="#5E4330" transform="rotate(18 1278 470)"/>
+    <ellipse cx="1418" cy="470" rx="34" ry="70" fill="#5E4330" transform="rotate(-18 1418 470)"/>
+    <circle cx="1348" cy="500" r="96" fill="#7A5A40"/>
+    <ellipse cx="1348" cy="545" rx="54" ry="42" fill="#E9C9A0"/>
+    <circle cx="1314" cy="480" r="10" fill="#2B2B2B"/>
+    <circle cx="1382" cy="480" r="10" fill="#2B2B2B"/>
+    <circle cx="1317" cy="477" r="3" fill="#fff"/>
+    <circle cx="1385" cy="477" r="3" fill="#fff"/>
+    <ellipse cx="1348" cy="524" rx="19" ry="13" fill="#2B2B2B"/>
+    <path d="M1348 537 v14 M1348 551 q -14 12 -26 2 M1348 551 q 14 12 26 2" stroke="#2B2B2B" stroke-width="4" fill="none" stroke-linecap="round"/>
+  </g>
+</svg>

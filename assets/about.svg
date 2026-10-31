@@ -1,0 +1,33 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 400">
+  <rect width="400" height="400" fill="#FEF3E6"/>
+  <circle cx="320" cy="80" r="70" fill="#F5B83D" opacity=".35"/>
+  <circle cx="60" cy="330" r="80" fill="#5DB59B" opacity=".25"/>
+
+  <!-- Médica veterinaria -->
+  <path d="M70 400 C 70 300 120 262 180 262 C 240 262 290 300 290 400Z" fill="#FFFFFF"/>
+  <path d="M150 266 L180 330 L210 266Z" fill="#4AA3A2"/>
+  <path d="M140 270 L180 400 M220 270 L180 400" stroke="#E5E5E5" stroke-width="4"/>
+  <path d="M146 290 C 128 330 140 360 168 362" stroke="#2C7A66" stroke-width="7" fill="none" stroke-linecap="round"/>
+  <circle cx="172" cy="364" r="10" fill="#2C7A66"/>
+  <rect x="165" y="225" width="30" height="44" rx="12" fill="#E3A982"/>
+  <ellipse cx="180" cy="180" rx="56" ry="62" fill="#EDB993"/>
+  <path d="M122 182 C 112 110 160 98 186 104 C 230 100 252 140 238 186 C 232 160 214 136 180 136 C 150 136 132 152 122 182Z" fill="#4A3426"/>
+  <path d="M236 170 C 262 200 256 260 232 280 C 246 240 244 210 236 170Z" fill="#4A3426"/>
+  <circle cx="160" cy="186" r="6" fill="#2B2B2B"/>
+  <circle cx="200" cy="186" r="6" fill="#2B2B2B"/>
+  <path d="M164 212 q 16 14 32 0" stroke="#9B4A5C" stroke-width="5" fill="none" stroke-linecap="round"/>
+  <circle cx="146" cy="205" r="9" fill="#F39C34" opacity=".35"/>
+  <circle cx="214" cy="205" r="9" fill="#F39C34" opacity=".35"/>
+
+  <!-- Perro en brazos -->
+  <ellipse cx="262" cy="300" rx="22" ry="44" fill="#8E5A2B" transform="rotate(20 262 300)"/>
+  <ellipse cx="342" cy="300" rx="22" ry="44" fill="#8E5A2B" transform="rotate(-20 342 300)"/>
+  <ellipse cx="302" cy="388" rx="78" ry="56" fill="#C98A4B"/>
+  <circle cx="302" cy="318" r="58" fill="#C98A4B"/>
+  <ellipse cx="302" cy="342" rx="32" ry="25" fill="#F3DCC0"/>
+  <circle cx="281" cy="306" r="7" fill="#3A2A20"/>
+  <circle cx="323" cy="306" r="7" fill="#3A2A20"/>
+  <ellipse cx="302" cy="331" rx="12" ry="8" fill="#3A2A20"/>
+  <path d="M302 339 v8 M302 347 q -9 8 -17 1 M302 347 q 9 8 17 1" stroke="#3A2A20" stroke-width="3" fill="none" stroke-linecap="round"/>
+  <ellipse cx="240" cy="380" rx="30" ry="18" fill="#EDB993" transform="rotate(-20 240 380)"/>
+</svg>
